@@ -38,6 +38,9 @@ func CollectRepositoryMetrics(ctx context.Context) {
 	log.Debug("creating AWS ECR client")
 	client := ecr.NewFromConfig(cfg)
 
+	// Create a new context with the AWS ECR client object injected into it.
+	ecrctx := context.WithValue(ctx, AwsEcrClientKey{}, client)
+
 	// Keep a running total count of the number of repositories.
 	count := 0
 
@@ -58,8 +61,13 @@ func CollectRepositoryMetrics(ctx context.Context) {
 
 		log.WithFields(log.Fields{
 			"increment": len(response.Repositories),
-			"total": count,
+			"total":     count,
 		}).Debug("added to running count")
+
+		// Collect image metrics for the repository.
+		for _, repository := range response.Repositories {
+			go CollectImagesMetrics(ecrctx, repository)
+		}
 	}
 
 	// Set our repository count metric.
