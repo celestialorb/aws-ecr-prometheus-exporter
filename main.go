@@ -1,15 +1,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
 
+	"github.com/procyon-projects/chrono"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
-
 
 type AwsEcrClientKey struct{}
 
@@ -20,6 +21,7 @@ func main() {
 	viper.SetDefault("web.host", "127.0.0.1")
 	viper.SetDefault("web.port", 9090)
 	viper.SetDefault("web.metrics.path", "/metrics")
+	viper.SetDefault("cron.schedule", "0 0 * * * *")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.SetEnvPrefix("AWS_ECR_EXPORTER")
 	viper.AutomaticEnv()
@@ -44,6 +46,13 @@ func main() {
 	}
 	log.SetLevel(level)
 	log.Debug("logger initialized")
+
+	// Trigger a collection of metrics before we start our webserver.
+	CollectRepositoryMetrics(context.Background())
+
+	// Setup our scheduler.
+	scheduler := chrono.NewDefaultTaskScheduler()
+	scheduler.ScheduleWithCron(CollectRepositoryMetrics, viper.GetString("cron.schedule"))
 
 	// Add our Prometheus metrics handler.
 	log.Debug("adding Prometheus metrics handler")
