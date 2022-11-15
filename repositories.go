@@ -16,7 +16,7 @@ import (
 var (
 	repositoryCount = promauto.NewGauge(prometheus.GaugeOpts{
 		Name: "aws_ecr_repository_count",
-		Help: "The total number of repositories in AWS ECR.",
+		Help: "The total number of repositories in the AWS ECR registry.",
 	})
 
 	repositoryInfo = promauto.NewGaugeVec(prometheus.GaugeOpts{
