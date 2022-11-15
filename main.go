@@ -52,7 +52,15 @@ func main() {
 
 	// Setup our scheduler.
 	scheduler := chrono.NewDefaultTaskScheduler()
-	scheduler.ScheduleWithCron(CollectRepositoryMetrics, viper.GetString("cron.schedule"))
+	_, err = scheduler.ScheduleWithCron(
+		CollectRepositoryMetrics,
+		viper.GetString("cron.schedule"),
+	)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Fatal("failed to start scheduler")
+	}
 
 	// Add our Prometheus metrics handler.
 	log.Debug("adding Prometheus metrics handler")
