@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"strconv"
 
 	log "github.com/sirupsen/logrus"
 
@@ -18,10 +19,10 @@ var (
 		Help: "The total number of repositories in AWS ECR.",
 	})
 
-	// repositoryInfo = promauto.NewGauge(prometheus.GaugeOpts{
-	// 	Name: "aws_ecr_repository_info",
-	// 	Help: "TODO",
-	// })
+	repositoryInfo = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "aws_ecr_repository_info",
+		Help: "Informational metric providing context via labels.",
+	}, []string{"name", "registry", "scan_on_push", "tag_mutability", "uri"})
 )
 
 func CollectRepositoryMetrics(ctx context.Context) {
@@ -34,7 +35,7 @@ func CollectRepositoryMetrics(ctx context.Context) {
 		}).Fatal("failed to load AWS configuration")
 	}
 
-	// Create our AWS client object.
+	// Create our AWS ECR client object.
 	log.Debug("creating AWS ECR client")
 	client := ecr.NewFromConfig(cfg)
 
@@ -64,8 +65,17 @@ func CollectRepositoryMetrics(ctx context.Context) {
 			"total":     count,
 		}).Debug("added to running count")
 
-		// Collect image metrics for the repository.
 		for _, repository := range response.Repositories {
+			// Set the repository information metric.
+			repositoryInfo.WithLabelValues(
+				*repository.RepositoryName,
+				*repository.RegistryId,
+				strconv.FormatBool(repository.ImageScanningConfiguration.ScanOnPush),
+				string(repository.ImageTagMutability),
+				*repository.RepositoryUri,
+			).Set(1)
+
+			// Collect image metrics for the repository.
 			go CollectImagesMetrics(ecrctx, repository)
 		}
 	}
