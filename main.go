@@ -18,7 +18,7 @@ func main() {
 	// Setup our configuration.
 	viper.SetDefault("log.format", "logfmt")
 	viper.SetDefault("log.level", "info")
-	viper.SetDefault("web.host", "127.0.0.1")
+	viper.SetDefault("web.host", "0.0.0.0")
 	viper.SetDefault("web.port", 9090)
 	viper.SetDefault("web.metrics.path", "/metrics")
 	viper.SetDefault("cron.schedule", "0 0 * * * *")

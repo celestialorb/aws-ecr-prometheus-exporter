@@ -16,7 +16,7 @@ with `AWS_ECR_EXPORTER`.
 | `AWS_ECR_EXPORTER_CRON_SCHEDULE` | The cron schedule that triggers the updating of the metrics. | `0 0 * * * *` | N/A |
 | `AWS_ECR_EXPORTER_LOG_FORMAT` | The output format of the logs of the exporter. | `logfmt` | `json`, `logfmt`, `text` |
 | `AWS_ECR_EXPORTER_LOG_LEVEL` | The verbosity level of the logs of the exporter. | `info` | `debug`, `info`, `warn`, `error`, `fatal` |
-| `AWS_ECR_EXPORTER_WEB_HOST` | The address/host the webserver will bind against. | `127.0.0.1` | N/A |
+| `AWS_ECR_EXPORTER_WEB_HOST` | The address/host the webserver will bind against. | `0.0.0.0` | N/A |
 | `AWS_ECR_EXPORTER_WEB_PORT` | The port the webserver will bind against. | `9090` | N/A |
 | `AWS_ECR_EXPORTER_WEB_METRICS_PATH` | The path the metrics will be exposed on. | `/metrics` | N/A |
 
