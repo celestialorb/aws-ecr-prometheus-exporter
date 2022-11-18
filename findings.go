@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
@@ -51,7 +52,14 @@ func CollectScanMetrics(
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
-			logger.Fatal("failed to retrieve next scan findings page")
+			var snfe *types.ScanNotFoundException
+			if errors.As(err, &snfe) {
+				logger.WithField("err", err).Debug("scan not found, skipping")
+				continue
+			}
+
+			logger.WithField("err", err).Warn("failed to retrieve next scan findings page")
+			continue
 		}
 
 		// If we aren't provided any image scan findings this means a scan has not been
