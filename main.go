@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/bluele/gcache"
 	"github.com/procyon-projects/chrono"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
@@ -16,6 +17,7 @@ import (
 type AwsEcrClientKey struct{}
 
 var rateLimiter rate.Limiter
+var awsCache gcache.Cache
 
 func main() {
 	// Setup our configuration.
@@ -55,6 +57,9 @@ func main() {
 	log.SetLevel(level)
 	log.Debug("logger initialized")
 
+	// Instantiate our AWS response cache.
+	awsCache = gcache.New(100).LRU().Build()
+
 	// Instantiate our rate limiter instance from our service configuration.
 	log.Info("instantiating rate limiter")
 	rateLimiter = *rate.NewLimiter(
@@ -86,7 +91,7 @@ func main() {
 	http.Handle(viper.GetString("web.metrics.path"), promhttp.Handler())
 
 	// Start our webserver.
-	log.Debug("starting webserver")
+	log.Info("starting webserver")
 	err = http.ListenAndServe(
 		fmt.Sprintf(
 			"%s:%d",

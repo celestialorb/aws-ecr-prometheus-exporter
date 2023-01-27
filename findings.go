@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
 	"github.com/aws/aws-sdk-go-v2/service/ecr/types"
@@ -40,6 +41,13 @@ func CollectScanMetrics(
 		},
 	})
 
+	// Check to see if we've already called the API for these image scan findings.
+	found := awsCache.Has(image.ImageDigest)
+	if found {
+		logger.Info("found results for API call in cache, skipping")
+		return
+	}
+
 	// Extract our AWS ECR client from the given context.
 	client := ctx.Value(AwsEcrClientKey{}).(*ecr.Client)
 
@@ -66,7 +74,7 @@ func CollectScanMetrics(
 			}
 
 			logger.WithField("err", err).Warn("failed to retrieve next scan findings page")
-			continue
+			return
 		}
 
 		// If we aren't provided any image scan findings this means a scan has not been
@@ -102,4 +110,8 @@ func CollectScanMetrics(
 			}).Debug("set severity findings")
 		}
 	}
+
+	// Once we're done, store a value in the in-memory cache for up to 24 hours to avoid making these expensive
+	// API calls again.
+	awsCache.SetWithExpire(image.ImageDigest, true, 24*time.Hour)
 }
