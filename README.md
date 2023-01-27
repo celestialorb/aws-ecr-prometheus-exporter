@@ -23,7 +23,7 @@ with `AWS_ECR_EXPORTER`.
 | `AWS_ECR_EXPORTER_WEB_PORT`             | The port the webserver will bind against.                    | `9090`        | N/A                                       |
 | `AWS_ECR_EXPORTER_WEB_METRICS_PATH`     | The path the metrics will be exposed on.                     | `/metrics`    | N/A                                       |
 | `AWS_ECR_EXPORTER_RATE_LIMIT_BURSTS`    | The maximum burst size of the rate limiter.                  | `1`           | N/A                                       |
-| `AWS_ECR_EXPORTER_RATE_LIMIT_FREQUENCY` | The maximum overall event rate limit.                        | `2`           | N/A                                       |
+| `AWS_ECR_EXPORTER_RATE_LIMIT_FREQUENCY` | The maximum overall event rate limit in Hz.                  | `2`           | N/A                                       |
 
 ## Metrics
 
