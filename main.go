@@ -10,9 +10,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"golang.org/x/time/rate"
 )
 
 type AwsEcrClientKey struct{}
+
+var rl rate.Limiter
 
 func main() {
 	// Setup our configuration.
@@ -46,6 +49,15 @@ func main() {
 	}
 	log.SetLevel(level)
 	log.Debug("logger initialized")
+
+	// / Explanation: interval is a time in seconds, so if interval is 1 and requests
+	// also 1 then only 1 operation per second is performed.
+	// Variables for rate limiting
+	number_of_requests := 2
+	// Number of seconds for rate interval
+	interval := 1
+	// Create the rate limiter
+	rl = *rate.NewLimiter(rate.Limit(number_of_requests), interval)
 
 	// Trigger a collection of metrics before we start our webserver.
 	CollectRepositoryMetrics(context.Background())
