@@ -41,7 +41,10 @@ func CollectImagesMetrics(
 	// While we still have pages to sift through, grab the next one and process it.
 	for images.HasMorePages() {
 		// Rate limit calls to the AWS API.
-		rateLimiter.Wait(ctx)
+		err := rateLimiter.Wait(ctx)
+		if err != nil {
+			logger.Error("failed to wait for rate limiter", err)
+		}
 
 		// Fetch the next page of list images results.
 		ipage, err := images.NextPage(ctx)
@@ -67,7 +70,10 @@ func CollectImagesMetrics(
 		// While we still have pages of image descriptions, grab the next one and process it.
 		for descriptions.HasMorePages() {
 			// Rate limit calls to the AWS API.
-			rateLimiter.Wait(ctx)
+			err := rateLimiter.Wait(ctx)
+			if err != nil {
+				logger.Error("failed to wait for rate limiter", err)
+			}
 
 			// Fetch the next page of image descriptions.
 			dpage, err := descriptions.NextPage(ctx)
