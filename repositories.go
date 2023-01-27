@@ -48,6 +48,8 @@ func CollectRepositoryMetrics(ctx context.Context) {
 	// Use the client to get a list of all the repositories in our registry.
 	paginator := ecr.NewDescribeRepositoriesPaginator(client, &ecr.DescribeRepositoriesInput{})
 	for paginator.HasMorePages() {
+		// Rate Limiting this call
+		rl.Wait(ctx)
 		response, err := paginator.NextPage(ctx)
 		if err != nil {
 			log.WithFields(log.Fields{

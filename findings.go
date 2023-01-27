@@ -50,6 +50,8 @@ func CollectScanMetrics(
 	})
 
 	for paginator.HasMorePages() {
+		// Rate Limiting this call
+		rl.Wait(ctx)
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
 			var snfe *types.ScanNotFoundException

@@ -40,6 +40,8 @@ func CollectImagesMetrics(
 
 	// While we still have pages to sift through, grab the next one and process it.
 	for images.HasMorePages() {
+		// Rate Limiting this call
+		rl.Wait(ctx)
 		ipage, err := images.NextPage(ctx)
 		if err != nil {
 			logger.WithFields(log.Fields{
@@ -62,6 +64,8 @@ func CollectImagesMetrics(
 
 		// While we still have pages of image descriptions, grab the next one and process it.
 		for descriptions.HasMorePages() {
+			// Rate Limiting this call
+			rl.Wait(ctx)
 			dpage, err := descriptions.NextPage(ctx)
 			if err != nil {
 				logger.WithFields(log.Fields{
@@ -71,6 +75,8 @@ func CollectImagesMetrics(
 
 			for _, description := range dpage.ImageDetails {
 				for _, tag := range description.ImageTags {
+					// Rate Limiting this call
+					rl.Wait(ctx)
 					ilogger := logger.WithFields(log.Fields{
 						"image": map[string]string{
 							"digest": *description.ImageDigest,
