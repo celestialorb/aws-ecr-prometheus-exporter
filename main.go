@@ -15,7 +15,7 @@ import (
 
 type AwsEcrClientKey struct{}
 
-var rl rate.Limiter
+var rateLimiter rate.Limiter
 
 func main() {
 	// Setup our configuration.
@@ -25,6 +25,11 @@ func main() {
 	viper.SetDefault("web.port", 9090)
 	viper.SetDefault("web.metrics.path", "/metrics")
 	viper.SetDefault("cron.schedule", "0 0 * * * *")
+
+	// Setup the rate limiter configuration.
+	viper.SetDefault("rate.limit.bursts", 1)
+	viper.SetDefault("rate.limit.frequency", 2)
+
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.SetEnvPrefix("AWS_ECR_EXPORTER")
 	viper.AutomaticEnv()
@@ -50,14 +55,16 @@ func main() {
 	log.SetLevel(level)
 	log.Debug("logger initialized")
 
-	// / Explanation: interval is a time in seconds, so if interval is 1 and requests
-	// also 1 then only 1 operation per second is performed.
-	// Variables for rate limiting
-	number_of_requests := 2
-	// Number of seconds for rate interval
-	interval := 1
-	// Create the rate limiter
-	rl = *rate.NewLimiter(rate.Limit(number_of_requests), interval)
+	// Instantiate our rate limiter instance from our service configuration.
+	log.Info("instantiating rate limiter")
+	rateLimiter = *rate.NewLimiter(
+		rate.Limit(viper.GetFloat64("rate.limit.frequency")),
+		viper.GetInt("rate.limit.bursts"),
+	)
+	log.WithFields(log.Fields{
+		"bursts":    rateLimiter.Burst(),
+		"frequency": rateLimiter.Limit(),
+	}).Info("rate limiter instantiated")
 
 	// Trigger a collection of metrics before we start our webserver.
 	CollectRepositoryMetrics(context.Background())
