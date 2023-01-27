@@ -51,7 +51,8 @@ The table below describes the metrics exported for the image in AWS ECR reposito
 ### Image Scan Findings
 
 The table below describes the metrics exported for the image scan findings by AWS ECR.
-| Metric | Type | Description |
-| --- | --- | --- |
-| `aws_ecr_image_scan_findings` | Gauge | The number of findings for an AWS ECR image scan. |
+
+| Metric                                           | Type  | Description                                                  |
+| ------------------------------------------------ | ----- | ------------------------------------------------------------ |
+| `aws_ecr_image_scan_findings`                    | Gauge | The number of findings for an AWS ECR image scan.            |
 | `aws_ecr_image_scan_completed_timestamp_seconds` | Gauge | The timestamp of the latest completed image scan in AWS ECR. |
