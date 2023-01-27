@@ -51,7 +51,10 @@ func CollectScanMetrics(
 
 	for paginator.HasMorePages() {
 		// Rate limit calls to the AWS API.
-		rateLimiter.Wait(ctx)
+		err := rateLimiter.Wait(ctx)
+		if err != nil {
+			logger.Error("failed to wait for rate limiter", err)
+		}
 
 		// Fetch the next page of image scan findings results.
 		page, err := paginator.NextPage(ctx)
