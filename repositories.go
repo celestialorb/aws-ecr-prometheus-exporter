@@ -49,7 +49,10 @@ func CollectRepositoryMetrics(ctx context.Context) {
 	paginator := ecr.NewDescribeRepositoriesPaginator(client, &ecr.DescribeRepositoriesInput{})
 	for paginator.HasMorePages() {
 		// Rate limit calls to the AWS API.
-		rateLimiter.Wait(ctx)
+		err := rateLimiter.Wait(ctx)
+		if err != nil {
+			log.Error("failed to wait for rate limiter", err)
+		}
 
 		// Fetch the next page of repository descriptions.
 		response, err := paginator.NextPage(ctx)
