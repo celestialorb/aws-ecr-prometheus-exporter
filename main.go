@@ -10,9 +10,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"golang.org/x/time/rate"
 )
 
 type AwsEcrClientKey struct{}
+
+var rateLimiter rate.Limiter
 
 func main() {
 	// Setup our configuration.
@@ -22,6 +25,11 @@ func main() {
 	viper.SetDefault("web.port", 9090)
 	viper.SetDefault("web.metrics.path", "/metrics")
 	viper.SetDefault("cron.schedule", "0 0 * * * *")
+
+	// Setup the rate limiter configuration.
+	viper.SetDefault("rate.limit.bursts", 1)
+	viper.SetDefault("rate.limit.frequency", 2)
+
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.SetEnvPrefix("AWS_ECR_EXPORTER")
 	viper.AutomaticEnv()
@@ -46,6 +54,17 @@ func main() {
 	}
 	log.SetLevel(level)
 	log.Debug("logger initialized")
+
+	// Instantiate our rate limiter instance from our service configuration.
+	log.Info("instantiating rate limiter")
+	rateLimiter = *rate.NewLimiter(
+		rate.Limit(viper.GetFloat64("rate.limit.frequency")),
+		viper.GetInt("rate.limit.bursts"),
+	)
+	log.WithFields(log.Fields{
+		"bursts":    rateLimiter.Burst(),
+		"frequency": rateLimiter.Limit(),
+	}).Info("rate limiter instantiated")
 
 	// Trigger a collection of metrics before we start our webserver.
 	CollectRepositoryMetrics(context.Background())
