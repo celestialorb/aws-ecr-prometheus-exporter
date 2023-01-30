@@ -14,16 +14,18 @@ defaults. Below is a table of all configurable element, their default values, an
 descriptions. All configurable elements can be set via environment variables when prefixed
 with `AWS_ECR_EXPORTER`.
 
-| Element                                 | Description                                                  | Default       | Values                                    |
-| --------------------------------------- | ------------------------------------------------------------ | ------------- | ----------------------------------------- |
-| `AWS_ECR_EXPORTER_CRON_SCHEDULE`        | The cron schedule that triggers the updating of the metrics. | `0 0 * * * *` | N/A                                       |
-| `AWS_ECR_EXPORTER_LOG_FORMAT`           | The output format of the logs of the exporter.               | `logfmt`      | `json`, `logfmt`, `text`                  |
-| `AWS_ECR_EXPORTER_LOG_LEVEL`            | The verbosity level of the logs of the exporter.             | `info`        | `debug`, `info`, `warn`, `error`, `fatal` |
-| `AWS_ECR_EXPORTER_WEB_HOST`             | The address/host the webserver will bind against.            | `0.0.0.0`     | N/A                                       |
-| `AWS_ECR_EXPORTER_WEB_PORT`             | The port the webserver will bind against.                    | `9090`        | N/A                                       |
-| `AWS_ECR_EXPORTER_WEB_METRICS_PATH`     | The path the metrics will be exposed on.                     | `/metrics`    | N/A                                       |
-| `AWS_ECR_EXPORTER_RATE_LIMIT_BURSTS`    | The maximum burst size of the rate limiter.                  | `1`           | N/A                                       |
-| `AWS_ECR_EXPORTER_RATE_LIMIT_FREQUENCY` | The maximum overall event rate limit in Hz.                  | `2`           | N/A                                       |
+| Element                                      | Description                                                                            | Default       | Values                                    |
+| -------------------------------------------- | -------------------------------------------------------------------------------------- | ------------- | ----------------------------------------- |
+| `AWS_ECR_EXPORTER_CRON_SCHEDULE`             | The cron schedule that triggers the updating of the metrics.                           | `0 0 * * * *` | N/A                                       |
+| `AWS_ECR_EXPORTER_LOG_FORMAT`                | The output format of the logs of the exporter.                                         | `logfmt`      | `json`, `logfmt`, `text`                  |
+| `AWS_ECR_EXPORTER_LOG_LEVEL`                 | The verbosity level of the logs of the exporter.                                       | `info`        | `debug`, `info`, `warn`, `error`, `fatal` |
+| `AWS_ECR_EXPORTER_WEB_HOST`                  | The address/host the webserver will bind against.                                      | `0.0.0.0`     | N/A                                       |
+| `AWS_ECR_EXPORTER_WEB_PORT`                  | The port the webserver will bind against.                                              | `9090`        | N/A                                       |
+| `AWS_ECR_EXPORTER_WEB_METRICS_PATH`          | The path the metrics will be exposed on.                                               | `/metrics`    | N/A                                       |
+| `AWS_ECR_EXPORTER_RATE_LIMIT_BURSTS`         | The maximum burst size of the rate limiter.                                            | `1`           | N/A                                       |
+| `AWS_ECR_EXPORTER_RATE_LIMIT_FREQUENCY`      | The maximum overall event rate limit in Hz.                                            | `2`           | N/A                                       |
+| `AWS_ECR_EXPORTER_LIMITS_IMAGE_TAGS_COUNT`   | The maximum number of image tags the exporter will collect metrics for per repository. | `3`           | N/A                                       |
+| `AWS_ECR_EXPORTER_LIMITS_IMAGE_TAGS_ENABLED` | Whether or not the image tags limit is enabled.                                        | `true`        | `true`, `false`                           |
 
 ## Metrics
 
