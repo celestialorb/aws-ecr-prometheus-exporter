@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
 	"github.com/aws/aws-sdk-go-v2/service/ecr/types"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -67,7 +69,9 @@ func CollectImagesMetrics(
 			ImageIds:       ipage.ImageIds,
 		})
 
-		// While we still have pages of image descriptions, grab the next one and process it.
+		// Build up an in-memory list of image descriptions so we can sort them as we are unable to sort them via the
+		// AWS API call.
+		images := []types.ImageDetail{}
 		for descriptions.HasMorePages() {
 			// Rate limit calls to the AWS API.
 			err := rateLimiter.Wait(ctx)
@@ -83,37 +87,60 @@ func CollectImagesMetrics(
 				}).Fatal("failed to retrieve next page of image descriptions")
 			}
 
-			for _, description := range dpage.ImageDetails {
-				for _, tag := range description.ImageTags {
-					ilogger := logger.WithFields(log.Fields{
-						"image": map[string]string{
-							"digest": *description.ImageDigest,
-							"tag":    tag,
-						},
-					})
-					ilogger.Info("setting metrics for image")
+			images = append(images, dpage.ImageDetails...)
+		}
 
-					// Set the image pushed timestamp metric.
-					imagePushedAt.WithLabelValues(
-						*description.RepositoryName,
-						*description.ImageDigest,
-						tag,
-					).Set(float64(description.ImagePushedAt.Unix()))
-					ilogger.Debug("set image pushed at metric")
+		// Sort the images by pushed time.
+		sort.SliceStable(images, func(ii, jj int) bool {
+			return images[ii].ImagePushedAt.After(*images[jj].ImagePushedAt)
+		})
 
-					// Set the image size metric.
-					imageSize.WithLabelValues(
-						*description.RepositoryName,
-						*description.ImageDigest,
-						tag,
-					).Set(float64(*description.ImageSizeInBytes))
-					ilogger.Debug("set image size metric")
+		// Grab a copy of our image tag limit.
+		tags := viper.GetUint("limits.image.tags.count")
+		for _, description := range images {
+			for _, tag := range description.ImageTags {
+				// Setup a logger instance scoped to this image tag.
+				ilogger := logger.WithFields(log.Fields{
+					"image": map[string]string{
+						"digest": *description.ImageDigest,
+						"tag":    tag,
+					},
+				})
 
-					go CollectScanMetrics(ctx, repository, &types.ImageIdentifier{
-						ImageDigest: description.ImageDigest,
-						ImageTag:    &tag,
-					})
+				// Ensure that we're not going over our tag limit.
+				if viper.GetBool("limits.image.tags.enabled") && tags <= 0 {
+					// If we've hit our limit, log out a warning and continue on without collecting more metrics.
+					ilogger.WithFields(log.Fields{
+						"reason": "image tag limit reached",
+					}).Warn("skipping metric collection for image tag")
+					continue
+				} else {
+					// Decrement our image tag limit count.
+					tags -= 1
 				}
+
+				ilogger.Info("setting metrics for image")
+
+				// Set the image pushed timestamp metric.
+				imagePushedAt.WithLabelValues(
+					*description.RepositoryName,
+					*description.ImageDigest,
+					tag,
+				).Set(float64(description.ImagePushedAt.Unix()))
+				ilogger.Debug("set image pushed at metric")
+
+				// Set the image size metric.
+				imageSize.WithLabelValues(
+					*description.RepositoryName,
+					*description.ImageDigest,
+					tag,
+				).Set(float64(*description.ImageSizeInBytes))
+				ilogger.Debug("set image size metric")
+
+				go CollectScanMetrics(ctx, repository, &types.ImageIdentifier{
+					ImageDigest: description.ImageDigest,
+					ImageTag:    &tag,
+				})
 			}
 		}
 	}

@@ -18,13 +18,19 @@ type AwsEcrClientKey struct{}
 var rateLimiter rate.Limiter
 
 func main() {
-	// Setup our configuration.
+	// Setup our logging configuration.
 	viper.SetDefault("log.format", "logfmt")
 	viper.SetDefault("log.level", "info")
+
+	// Setup the web server configuration.
 	viper.SetDefault("web.host", "0.0.0.0")
 	viper.SetDefault("web.port", 9090)
 	viper.SetDefault("web.metrics.path", "/metrics")
+
+	// Setup our metrics collection configuration.
 	viper.SetDefault("cron.schedule", "0 0 * * * *")
+	viper.SetDefault("limits.image.tags.count", 3)
+	viper.SetDefault("limits.image.tags.enabled", true)
 
 	// Setup the rate limiter configuration.
 	viper.SetDefault("rate.limit.bursts", 1)
