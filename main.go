@@ -30,7 +30,7 @@ func main() {
 	// Setup our metrics collection configuration.
 	viper.SetDefault("cron.schedule", "0 0 * * * *")
 	viper.SetDefault("limits.image.tags.count", 3)
-	viper.SetDefault("limits.image.tags.enabled", true)
+	viper.SetDefault("limits.image.tags.enabled", false)
 
 	// Setup the rate limiter configuration.
 	viper.SetDefault("rate.limit.bursts", 1)

@@ -25,7 +25,7 @@ with `AWS_ECR_EXPORTER`.
 | `AWS_ECR_EXPORTER_RATE_LIMIT_BURSTS`         | The maximum burst size of the rate limiter.                                            | `1`           | N/A                                       |
 | `AWS_ECR_EXPORTER_RATE_LIMIT_FREQUENCY`      | The maximum overall event rate limit in Hz.                                            | `2`           | N/A                                       |
 | `AWS_ECR_EXPORTER_LIMITS_IMAGE_TAGS_COUNT`   | The maximum number of image tags the exporter will collect metrics for per repository. | `3`           | N/A                                       |
-| `AWS_ECR_EXPORTER_LIMITS_IMAGE_TAGS_ENABLED` | Whether or not the image tags limit is enabled.                                        | `true`        | `true`, `false`                           |
+| `AWS_ECR_EXPORTER_LIMITS_IMAGE_TAGS_ENABLED` | Whether or not the image tags limit is enabled.                                        | `false`       | `true`, `false`                           |
 
 ## Metrics
 
